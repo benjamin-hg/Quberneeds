@@ -41,10 +41,10 @@ def main():
 
         else:
             print("\nPerforming dry-run for: " + str(env))
-            deploy_charts(paths, dry_run=True)
+            deploy_charts(paths, '--dry-run')
 
             print("\nDeploying for: " + str(env))
-            deploy_charts(paths)
+            deploy_charts(paths, env['HELM_ARGS'] if 'HELM_ARGS' in env else None)
 
     for path in paths:
         rmtree(path)
@@ -118,15 +118,15 @@ def apply_env(env):
         environ[key] = value
 
 
-def deploy_charts(paths, dry_run=False):
+def deploy_charts(paths, helm_args):
     for path in paths:
-        deploy_chart(path, dry_run)
+        deploy_chart(path, helm_args)
 
 
-def deploy_chart(path, dry_run=False):
+def deploy_chart(path, helm_args):
     args = ['helmfile', '-f', join(path, 'helmfile.yaml'), 'charts']
-    if dry_run:
-        args += ['--args', '--dry-run']
+    if helm_args:
+        args += ['--args', helm_args]
 
     run_process(args)
 
