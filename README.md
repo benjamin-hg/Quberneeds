@@ -25,10 +25,6 @@ Quberneeds takes a JSON file as input. This file lists a set of charts to downlo
 }
 ```
 
-### Special environment variables
-
-If you specify an environment variable named `TENANT_ID` it will be considered as a Kubernetes namespace to be deleted on uninstall.
-
 ## Chart structure
 
 A Helm chart contains a `Chart.yaml` for metadata and a `values.yaml` for configuration in its root directory.  

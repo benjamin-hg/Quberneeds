@@ -3,7 +3,7 @@ from os.path import join
 from tempfile import mkdtemp
 from shutil import rmtree
 from chart_inspector import get_exports
-import kubectl, helm, helmfile
+import helm, helmfile
 
 class Deployer:
     def __init__(self):
@@ -31,10 +31,6 @@ class Deployer:
         print("\nDeleting charts")
         for chart_path in chart_paths:
             self.__delete(chart_path)
-
-        if 'TENANT_ID' in environment:
-            print("\nDeleting namespace " + environment['TENANT_ID'])
-            kubectl.delete_namespace(environment['TENANT_ID'])
 
     def __fetch(self, charts):
         chart_paths = []
