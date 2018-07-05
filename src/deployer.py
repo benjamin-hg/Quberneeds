@@ -6,12 +6,6 @@ from chart_inspector import get_exports
 import helm, helmfile
 
 class Deployer:
-    def __init__(self):
-        self.__tempDir = mkdtemp()
-    
-    def cleanup(self):
-        rmtree(self.__tempDir)
-
     def install(self, charts, environment):
         chart_paths = self.__fetch(charts)
         self.__apply_environment(chart_paths, environment)
@@ -32,6 +26,13 @@ class Deployer:
         for chart_path in chart_paths:
             self.__delete(chart_path)
 
+    def __enter__(self):
+        self.__tempDir = mkdtemp()
+        return self
+
+    def __exit__(self ,type, value, traceback):
+        rmtree(self.__tempDir)
+
     def __fetch(self, charts):
         chart_paths = []
 
@@ -43,7 +44,7 @@ class Deployer:
 
     def __apply_environment(self, chart_paths, environment):
         for chart_path in chart_paths:
-            self.__apply_exports(chart_path, environment) 
+            self.__apply_exports(chart_path, environment)
 
         for key, value in environment.items():
             environ[key] = value

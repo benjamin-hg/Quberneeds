@@ -26,11 +26,8 @@ if 'repositories' in doc:
 
 helm.repo_update()
 
-deployer = Deployer()
-try:
+with Deployer() as deployer:
     if delete_mode:
         deployer.delete(doc['charts'], doc['env'])
     else:
         deployer.install(doc['charts'], doc['env'])
-finally:
-    deployer.cleanup()
