@@ -1,16 +1,24 @@
+from os import environ
 from external_tool import run
 
-def charts(helmfilePath, helmArgs=None):
+def charts(environment, helmfilePath, helmArgs=None):
     args = ['helmfile','-f', helmfilePath, 'charts']
     if helmArgs:
         args += ['--args', helmArgs]
 
+    apply_environ(environment)
     run(*args)
 
 
-def delete(helmfilePath, purge=False):
+def delete(environment, helmfilePath, purge=False):
     args = ['helmfile', '-f', helmfilePath, 'delete']
     if purge:
         args += ['--purge']
 
+    apply_environ(environment)
     run(*args)
+
+
+def apply_environ(environment):
+    for key, value in environment.items():
+        environ[key] = value

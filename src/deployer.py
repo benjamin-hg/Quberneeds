@@ -1,4 +1,3 @@
-from os import environ
 from os.path import join
 from tempfile import mkdtemp
 from shutil import rmtree
@@ -8,23 +7,27 @@ import helm, helmfile
 class Deployer:
     def install(self, charts, environment):
         chart_paths = self.__fetch(charts)
-        self.__apply_environment(chart_paths, environment)
+
+        for chart_path in chart_paths:
+            apply_exports(chart_path, environment)
 
         print("\nInstalling charts (dry-run)")
         for chart_path in chart_paths:
-            self.__install(chart_path, dry_run=True)
+            install(chart_path, environment, dry_run=True)
 
         print("\nInstalling charts")
         for chart_path in chart_paths:
-            self.__install(chart_path)
+            install(chart_path, environment)
 
     def delete(self, charts, environment):
         chart_paths = self.__fetch(charts)
-        self.__apply_environment(chart_paths, environment)
+
+        for chart_path in chart_paths:
+            apply_exports(chart_path, environment)
 
         print("\nDeleting charts")
         for chart_path in chart_paths:
-            self.__delete(chart_path)
+            delete(chart_path, environment)
 
     def __enter__(self):
         self.__tempDir = mkdtemp()
@@ -42,22 +45,18 @@ class Deployer:
 
         return chart_paths
 
-    def __apply_environment(self, chart_paths, environment):
-        for chart_path in chart_paths:
-            self.__apply_exports(chart_path, environment)
 
-        for key, value in environment.items():
-            environ[key] = value
+def apply_exports(chart_path, environment):
+    for key, value in get_exports(chart_path).items():
+        if key in environment:
+            environment[key] += "," + value
+        else:
+            environment[key] = value
 
-    def __apply_exports(self, chart_path, environment):
-        for key, value in get_exports(chart_path).items():
-            if key in environment:
-                environment[key] += "," + value
-            else:
-                environment[key] = value
 
-    def __install(self, chart_path, dry_run=False):
-        helmfile.charts(join(chart_path, 'helmfile.yaml'), helmArgs='--dry-run' if dry_run else '--wait')
+def install(chart_path, environment, dry_run=False):
+    helmfile.charts(environment, join(chart_path, 'helmfile.yaml'), helmArgs='--dry-run' if dry_run else '--wait')
 
-    def __delete(self, chart_path):
-        helmfile.delete(join(chart_path, 'helmfile.yaml'), purge=True)
+
+def delete(chart_path, environment):
+    helmfile.delete(environment, join(chart_path, 'helmfile.yaml'), purge=True)
