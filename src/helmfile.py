@@ -21,4 +21,7 @@ def delete(environment, helmfilePath, purge=False):
 
 def apply_environ(environment):
     for key, value in environment.items():
-        environ[key] = value
+        if value is None:
+            print('\nUnable to set env var %s -- value is missing' % (key))
+        else:
+            environ[key] = value
